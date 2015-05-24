@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">MyFlick</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="list_fragment">list_fragment</string>
+    <string name="details_fragment">details_fragment</string>
+    <string name="flickr_api_key">39e655558ca9e2b845abc8ca45553629</string>
+    <string name="recent_photos">Imagens recentes</string>
+    <string name="comments">comentário(s)</string>
+    <string name="photo_details">Detalhes imagem</string>
+    <string name="commented_photo">Foto comentada</string>
+
+</resources>
