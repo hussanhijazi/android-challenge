@@ -36,8 +36,6 @@ public class Photo implements Serializable {
     private Title title;
     private Comments comments;
 
-
-    //    private String description;
     @Expose
     private Urls urls;
 
