@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
@@ -30,13 +31,16 @@ import br.com.helabs.flickr.activities.MainActivity;
 import br.com.helabs.flickr.adapters.ListPhotosAdapter;
 import br.com.helabs.flickr.api.FlickApi;
 import br.com.helabs.flickr.api.GetRecentPhotos;
+import br.com.helabs.flickr.api2.MyFlickApi;
+import br.com.helabs.flickr.api2.RestClient;
 import br.com.helabs.flickr.listeners.OnItemClickListener;
 import br.com.helabs.flickr.models.RecentPhoto;
 import br.com.helabs.flickr.models.RecentsPhotos;
 import br.com.helabs.flickr.utils.EndlessRecyclerViewOnScrollListener;
-import br.com.helabs.flickr.utils.MyCache;
 import br.com.helabs.flickr.utils.MySwipeRefresh;
-import br.com.helabs.flickr.utils.Utils;
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
 
 
 @EFragment(R.layout.list_fragment)
@@ -84,9 +88,8 @@ public class ListFragment extends Fragment {
     };
 
 
-    void initStartSwipeRefresh()
-    {
-    //    mSwipeRefresh.post(mRefreshRunnable);
+    void initStartSwipeRefresh() {
+        //    mSwipeRefresh.post(mRefreshRunnable);
     }
 
     public static ListFragment newInstance() {
@@ -170,13 +173,14 @@ public class ListFragment extends Fragment {
 
     @Background
     void getItemsInBackground(boolean clearCache, int page) {
-        items = getItems(clearCache, page);
-        showResult(items, clearCache);
+        getItems(clearCache, page);
+//        showResult(items, clearCache);
     }
 
     @UiThread
     void showResult(RecentsPhotos items, boolean clearCache) {
 
+        Log.d("OK", "okkk3");
         if (clearCache) {
             mPhotoList.setOnScrollListener(new EndlessRecyclerViewOnScrollListener(mLayoutManager) {
                 @Override
@@ -206,23 +210,53 @@ public class ListFragment extends Fragment {
     void btnCommentedPhoto() {
         ((MainActivity) getActivity()).onPhotoSelected(Long.valueOf(109722179), "", "");
     }
+    public void getItems2(final boolean clearCache, int page) {
 
-    public RecentsPhotos getItems(boolean clearCache, int page) {
-
-        String key = Utils.LIST_CACHE + Integer.toString(page) + Integer.toString(PER_PAGE);
-
-        if (clearCache)
-            MyCache.clearAll(getActivity());
-
-        if (!MyCache.has(key, getActivity())) {
-            GetRecentPhotos aList = myRestClient.getRecentPhotos(getString(R.string.flickr_api_key), PER_PAGE, page);
-            MyCache.add(key, aList.getPhotos(), getActivity());
-            return aList.getPhotos();
-        }
-
-        return (RecentsPhotos) MyCache.get(key, getActivity());
     }
 
+    public void getItems(final boolean clearCache, int page) {
+
+//        final String key = Utils.LIST_CACHE + Integer.toString(page) + Integer.toString(PER_PAGE);
+//
+//        if (clearCache)
+//            MyCache.clearAll(getActivity());
+//
+//        Log.d("h2", MyCache.has(key, getActivity()) + " " + key);
+//
+//        if (!MyCache.has(key, getActivity())) {
+
+
+
+        Observable<GetRecentPhotos> observable = RestClient.createService(MyFlickApi.class).getPhotos(PER_PAGE, page);
+
+        observable.observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<GetRecentPhotos>() {
+                    @Override
+                    public void onCompleted() {
+                        Toast.makeText(getActivity(),
+                                "Completed",
+                                Toast.LENGTH_SHORT)
+                                .show();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Toast.makeText(getActivity(),
+                                e.getMessage(),
+                                Toast.LENGTH_SHORT)
+                                .show();
+                    }
+
+                    @Override
+                    public void onNext(GetRecentPhotos recentPhotos) {
+                        showResult(recentPhotos.getPhotos(), clearCache);
+                    }
+                });
+
+//        } else {
+//            showResult(((RecentsPhotos) MyCache.get(key, getActivity())), clearCache);
+//        }
+    }
     private void startLoadMoreAnimation() {
         mLayoutProgressBar.setVisibility(View.VISIBLE);
         int actionbarSize = (int) (56 * Resources.getSystem().getDisplayMetrics().density);

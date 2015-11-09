@@ -1,7 +1,8 @@
 package br.com.helabs.flickr.utils;
 
 public class Utils {
-    public static final String FLICKR_API = "https://api.flickr.com/services/rest";
+    public static final String FLICKR_API = "https://api.flickr.com/services/rest/";
+    public static final String FLICKR_KEY = "39e655558ca9e2b845abc8ca45553629";
 
     public static final String GET_RECENT = "flickr.photos.getRecent";
     public static final String GET_INFO = "flickr.photos.getInfo";
